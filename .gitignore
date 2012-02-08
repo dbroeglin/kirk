@@ -4,3 +4,4 @@ Gemfile.lock
 *.gem
 stress/train_app/log
 tmp
+*.swp
