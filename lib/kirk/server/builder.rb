@@ -101,17 +101,21 @@ module Kirk
 
       def to_handler
         handlers = @configs.map do |c|
-          Jetty::ContextHandler.new.tap do |ctx|
-            # Set the virtual hosts
-            unless c.hosts.empty?
-              ctx.set_virtual_hosts(c.hosts)
+          if c.env[:SIP]
+            Jetty::SipAppContext.new './', '/' # TODO: still have to build the app
+          else
+            Jetty::ContextHandler.new.tap do |ctx|
+              # Set the virtual hosts
+              unless c.hosts.empty?
+                ctx.set_virtual_hosts(c.hosts)
+              end
+
+              application = HotDeployable.new(c)
+              application.add_watcher(watcher)
+
+              ctx.set_connector_names c.listen
+              ctx.set_handler application
             end
-
-            application = HotDeployable.new(c)
-            application.add_watcher(watcher)
-
-            ctx.set_connector_names c.listen
-            ctx.set_handler application
           end
         end
 

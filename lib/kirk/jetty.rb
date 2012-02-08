@@ -2,7 +2,7 @@
 unless Kirk.sub_process?
   require "kirk/jetty/servlet-api-2.5"
 
-  %w(util http io continuation server client webapp servlet security).each do |mod|
+  %w(util http io continuation server client webapp servlet security xml).each do |mod|
     require "kirk/jetty/jetty-#{mod}-7.4.5.v20110725"
   end
   %w(cipango-dar-2.0.0.jar cipango-deploy-2.0.0.jar cipango-main-2.0.jar cipango-server-2.0.0.jar sip-api-1.1.jar).each do |mod|
