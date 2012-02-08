@@ -49,9 +49,15 @@ module Kirk
       watcher.start if watcher
 
       @server = Jetty::Server.new.tap do |server|
+        sip_connectors = []
         connectors.each do |conn|
-          server.add_connector(conn)
+          if conn.kind_of? Jetty::SelectChannelConnector
+            server.add_connector(conn)
+          else
+            sip_connectors << conn
+          end
         end
+        server.connector_manager.connectors = sip_connectors
 
         server.set_handler(@handler)
       end

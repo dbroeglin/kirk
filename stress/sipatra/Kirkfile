@@ -1,0 +1,9 @@
+rack "config.ru" do
+  listen 9090
+  listen "127.0.0.1:8080"
+end
+
+sipatra "config.ru" do
+  listen "UDP/0.0.0.0:5060" 
+  listen "TCP/0.0.0.0:5060" 
+end

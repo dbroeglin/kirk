@@ -57,6 +57,25 @@ module Kirk
         @current = nil
       end
 
+      def sipatra(sipup)
+        sipup = expand_path(sipup)
+        puts "Sipatra app: '#{sipup}'"
+
+        unless File.exist?(sipup)
+          raise MissingRackupFile, "sipup file `#{sipup}` does not exist"
+        end
+
+        @current = new_config
+        @current.env[:SIP] = true
+        @current.rackup = sipup
+
+        yield if block_given?
+
+      ensure
+        @configs << @current
+        @current = nil
+      end
+
       def env(env)
         @current.env.merge!(env)
       end
@@ -96,7 +115,7 @@ module Kirk
           end
         end
 
-        Jetty::ContextHandlerCollection.new.tap do |collection|
+        Jetty::SipContextHandlerCollection.new.tap do |collection|
           collection.set_handlers(handlers)
         end
       end
@@ -110,9 +129,26 @@ module Kirk
 
             host, port = listener.split(':')
 
-            connector = Jetty::SelectChannelConnector.new
-            connector.set_host(host)
-            connector.set_port(port.to_i)
+            if host.index('/')
+              conn_type, host = host.split('/')
+            else
+              conn_type = nil
+            end
+
+            if config.env[:SIP]
+              case conn_type
+              when "UDP"
+                connector = Jetty::UdpConnector.new 
+              when "TCP"
+                connector = Jetty::TcpConnector.new 
+              else
+                raise "Unknown connector type: '#{conn_type}'"
+              end
+            else
+              connector = Jetty::SelectChannelConnector.new
+            end
+            connector.host = host
+            connector.port = port.to_i
 
             @connectors[listener] = connector
           end
